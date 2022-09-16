@@ -48,7 +48,7 @@ After this stage you'll have sampled data, with the following dimensions:
 ## Prediction 
 
 The essence of the stage is as follows: to push the data we have into a two-class PointNet model, 
-but not to look at the results it gives, but simply to get an intermediate layer - OneDimMaxPulling (`latent space`). 
+but not to look at the results it gives, but simply to get an intermediate layer - 1DMaxPulling (that is our `latent space`). 
 Then we will put this intermediate layer in OneClassSVM, and we will get our predictions. That's it
 
 You'll need to specify the following parameters:
@@ -76,10 +76,46 @@ a little clarification: `512` here is `sample_size` and `1024` - size of latent 
 `data_type` - default = `without_charge`. In case  you become interested in what will happen if you throw out part of the features from the dataset
 (for example you can thrown away X axis, and use onle Y and Charge to make a predictions. But actually it is useless)
 
+`kernel` - default(and the best) = `rbf`. Defines the kernel parameter for `OneClassSVM`.
 
+`gamma` - default = `auto`. Another parameter for `OneClassSVM`. Actually there is no big difference between gamma = `auto` or gamma = `scale`
 
+`degree` - degree of kernel = `poly`. I did't use this much, because perfomance of `poly` not so good as `rbf`
 
+`nu` - default = `[0.01, 0.015, 0.02, 0.027, 0.03, 0.04, 0.06, 0.09]`, parameter nu for OneClassSVM, defines a lower bound on the number of points in one class. For example `nu = 0.01` means the at least `1%` of data needs to be in one class. nu is a nuppy array for the convenience of training and comparing results, since this way we can see how the model will behave with different nu parameters. And we need to remember that we have about 2.7 percent of all data are fission events(that correspond to `nu = 0.027`),  so the nu parameter should not be too large, otherwise we risk very badly worsening our results in Precision.
 
+`num_of_train_exmp` - default = `[1000,2000,10000]`, the number of events on which we train OneClassSVM. It turns out that it is not always expedient to train OneClassSVM at once on all events, sometimes it is more profitable to train OneClassSVM only on a part of events, for example, on 1000, 2000, or 10000 events. The advantage of this approach is that when training, for example, on 1000 events, we get more Recall than if we trained on 10,000 events, but at the same time, the Precision of a model that was trained on 10,000 events is more than that of a model that trained on 1000, so you need to clearly understand what goals you want to achieve. So I advise you to experiment with these parameters.
+
+More information about OneClassSVM u can find in this article: https://medium.com/machine-learning-101/chapter-2-svm-support-vector-machine-theory-f0812effc72 or in this https://towardsdatascience.com/https-medium-com-pupalerushikesh-svm-f4b42800e989
+
+## Accuracy 
+
+Code to check if the model is doing well. Since we are dealing with unlabeled data, we will carry out the check in a rather rough way - we will say that fission events are those events in which there are more than or equal to `100 points`. And we will compare our predictions and these labels to create confusing matrices and build dependency plots Recall(nu), Precision(nu), F1-score(nu)
+
+u'll need to set next parameters:
+
+`data_raw_where` - where the raw data(before sampling) were stored
+
+`data_sampled_where` - where the sampled data were stored
+
+`weights_path` - where the weights were stored
+
+`predict_where` - where the predictions were stored
+
+`confusion_where` - where to save confusion matrices 
+
+`accuracy_where` - where to save accuracy ( plots Recall(nu), Precision(nu), F1-score(nu))
+
+`sample_size`  - sample size, the one u use before in `Prediction`
+
+`h5data` - what type of sampled data did u use, the same as in `Prediction`
+
+`eval_t` - default = `less`, type of data which you use for evaluation. There is 2 options, first is `less` that means that you defined not-fission 
+events as events with less than `100` points, second is `angus` - this is labeled data (about 2500 events) from `Angus Wong`
+
+`data_type` - default = `dresser_chair_512_1024`, the same as before in `Prediction`
+
+`kernel`, `gamma`, `nu`, `degree`, `num_of_train_exmp` - the same as in `Prediction`
 
 
 
