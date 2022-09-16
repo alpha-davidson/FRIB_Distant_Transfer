@@ -43,7 +43,7 @@ u'll need to specify the following parameters:
 
 After this stage you'll have sampled data, with the following dimensions:
 
-`data_sampled` = `(num_of_events, sample_size, (X, Y, Z, Charge, num_points_in_event, event_id))`
+`data_sampled` = `(num_of_events, sample_size, (X, Y, Z, Charge, num_points_in_event, event_id))`, where `event_id` - id of event in original h5 file
 
 ## Prediction 
 
@@ -60,6 +60,8 @@ You'll need to specify the following parameters:
 `weights_path` - where the weights were stored
 
 `predict_where` - Where to save predictions
+
+`predict_id_where` - Where to save id of fission event
 
 `umap_where` -  where to save umap plots(a special way to represent what the latent space looks like, it is a kind of convolution by coordinates)
 
