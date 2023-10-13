@@ -33,7 +33,7 @@ NUM_CLASSES = 2
 NUM_POINTS = num_points
 epochs = 20 # number of epochs
 
-weights_path = 'weights/' # where to save weights
+weights_path = '/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/weights/' # where to save weights
 
 def parse_dataset(num_points=num_points):
 
