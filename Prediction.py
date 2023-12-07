@@ -103,93 +103,59 @@ def pnet(sem_seg_flag, num_points, num_classes, dimension):
     return model, global_features
 
 
-data_raw_where = 'data/' # where the raw data(before sampling) were stored
-data_sampled_where = 'data/data_' # where the sampled data were stored
-weights_path = 'weights/' # where the weights were stored
-predict_where = 'one_class_SVM_predict/' # Where to save predictions
-umap_where = 'umap_plots/' # where to save umap plots
+# Base directory
+base_dir = '/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/'
 
+# Paths
+paths = {
+    "data_raw_where": base_dir + 'data/',
+    "data_sampled_where": base_dir + 'data/data_sampled/',
+    "weights_path": base_dir + 'weights/',
+    "predict_where": base_dir + 'one_class_SVM_predict/',
+    "umap_where": base_dir + 'umap_plots/',
+    "folder": base_dir + 'datalessthan5/' 
+}
+
+# Constants
 ISOTOPE = 'fission'
-folder = 'datalessthan5/'
-
-
-sample_size = 256 # sample size = num_points 
+sample_size = 512 # sample size = num_points 
 d_max = 1024 # Size of latent Space
 
+# Constants
+ISOTOPE = 'fission'
+sample_size = 512
+d_max = 1024
 
-# X, Y, Z, Charge, #points, Event Id
-# first number - sample size (for ex. 512_sampled -> sample size = 512)
-#h5data = '512_sampled' # X, Y, charge as features
-#h5data = '512_sampled_x' # Y, Z, Charge as features
-#h5data = '512_sampled_y' # X, Z, Charge as features 
-#h5data = '512_sampled_n' # X, Y,  num_points as features
-#h5data = '512_sampled_ncx' #X, Charge, num_points
-#h5data = '512_sampled_ncz' #Z, Charge, num_points
-#h5data = '64_sampled' # X, Y, Charge 
-#h5data = '32_sampled' # X, Y, Charge 
-#h5data = '32_sampled_x' # Y, Z, Charge
-#h5data = 'without_tresh' # X, Y, Charge
-#h5data = 'data_20'
-#h5data = 'data_250'
-#h5data = '128_sampled' # X, Y, Charge 
-h5data = '256_sampled' #X, Y, Charge 
-#h5data = 'with_n' # with  number of points (insted of x, for example)
-#Checkpoint
-if h5data == 'without_tresh':
-    data_raw1 = np.load(folder + ISOTOPE + '_size' + str(sample_size) + '_sampled.npy')
-    data_without_charge = np.delete(data_raw1, (2,3,5))
-    
-    data_without_charge_y = np.copy(data_without_charge)
-    data_without_charge_y = data_without_charge_y[:,:,(0,2)]
+# File names and deletion indices
+file_mappings = {
+    'without_tresh': (paths['folder'] + ISOTOPE + '_size' + str(sample_size) + '_sampled.npy', [2, 3, 5]),
+    'with_tresh': (paths['data_sampled_where'] + 'with_tresh_sampled.npy', [3, 4, 5, 6]),
+    'data_sampled': (paths['data_sampled_where'] + 'index_sampled.npy', [3, 4, 5, 6]),
+    '512_sampled': (paths['data_sampled_where'] + '512_sampled_old.npy', [2, 4, 5]),
+    '512_sampled_x': (paths['data_sampled_where'] + '512_sampled_old.npy', [0, 4, 5]),
+    '512_sampled_y': (paths['data_sampled_where'] + '512_sampled_old.npy', [1, 4, 5]),
+    '512_sampled_n': (paths['data_sampled_where'] + '512_sampled_old.npy', [2, 3, 5]),
+    '512_sampled_ncx': (paths['data_sampled_where'] + '512_sampled_old.npy', [1, 2, 5]),
+    '512_sampled_ncz': (paths['data_sampled_where'] + '512_sampled_old.npy', [0, 1, 5]),
+    '64_sampled': (paths['data_sampled_where'] + '64_sampled_old.npy', [2, 4, 5]),
+    '32_sampled': (paths['data_sampled_where'] + '32_sampled_old.npy', [2, 4, 5]),
+    '32_sampled_x': (paths['data_sampled_where'] + '32_sampled_old.npy', [0, 4, 5]),
+    'data_250': (paths['data_sampled_where'] + '250_sampled.npy', [2, 4, 5]),
+    '128_sampled': (paths['data_sampled_where'] + '128_sampled_old.npy', [2, 4, 5]),
+    '256_sampled': (paths['data_sampled_where'] + '256_sampled_old.npy', [2, 4, 5])
+}
 
-    data_without_charge_x = np.copy(data_without_charge)
-    data_without_charge_x = data_without_charge_x[:,:,(1,2)]
+def load_and_process_data(h5data):
+    file_path, indices_to_delete = file_mappings.get(h5data, (None, None))
+    if file_path:
+        data_raw = np.load(file_path)
+        data_without_charge = np.delete(data_raw, indices_to_delete, axis=2)
+        return data_without_charge
+    else:
+        raise ValueError(f"Invalid h5data value: {h5data}")
 
-    data_without_charge_z = np.copy(data_without_charge)
-    data_without_charge_z = data_without_charge_z[:,:,(0,1)]
-elif h5data == 'with_tresh':
-    data_raw1 = np.load(data_sampled_where + 'with_tresh_sampled.npy')
-    data_without_charge = np.delete(data_raw1, (3,4,5,6), axis = 2)# with event id
-elif h5data == 'data_sampled':
-    data_raw1 = np.load(data_sampled_where + 'index_sampled.npy')
-    data_without_charge = np.delete(data_raw1, (3,4,5,6), axis = 2)# with event i
-elif h5data == '512_sampled':
-    data_raw1 = np.load(data_sampled_where + '512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# X, Y, Charge
-elif h5data == '512_sampled_x':
-    data_raw1 = np.load(data_sampled_where+'512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (0,4,5), axis = 2)#  Y, Z, Charge
-elif h5data == '512_sampled_y':
-    data_raw1 = np.load(data_sampled_where+'512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (1,4,5), axis = 2)#  X, Z, Charge
-elif h5data == '512_sampled_n':
-    data_raw1 = np.load(data_sampled_where+'512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,3,5), axis = 2)#  X, Y, num_points
-elif h5data == '512_sampled_ncx':
-    data_raw1 = np.load(data_sampled_where+'512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (1,2,5), axis = 2)#  X, charge, num_points
-elif h5data == '512_sampled_ncz':
-    data_raw1 = np.load(data_sampled_where+'512_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (0,1,5), axis = 2)
-elif h5data == '64_sampled':
-    data_raw1 = np.load(data_sampled_where+'64_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# X, Y, Charge
-elif h5data == '32_sampled':
-    data_raw1 = np.load(data_sampled_where+'32_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# with event i
-elif h5data == '32_sampled_x':
-    data_raw1 = np.load(data_sampled_where+'32_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (0,4,5), axis = 2)# with event i
-elif h5data == 'data_250':
-    data_raw1 = np.load(data_sampled_where+'250_sampled.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# with event i
-elif h5data == '128_sampled':
-    data_raw1 = np.load(data_sampled_where+'128_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# X, Y, Charge
-elif h5data == '256_sampled':
-    data_raw1 = np.load(data_sampled_where+'256_sampled_old.npy')
-    data_without_charge = np.delete(data_raw1, (2,4,5), axis = 2)# with event i
-
+h5data = 'without_tresh'
+data_without_charge = load_and_process_data(h5data)
 
 #weights_type = 'random'
 #weights_type = 'Mg22_without_charge_y'
@@ -405,7 +371,7 @@ elif data_type == 'without_charge_z':
 
     
 
-np.save('train_feat_output/train_feature_' + weights_type + 
+np.save('/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/train_feat_output/train_feature_' + weights_type + 
         '_weights_', train_feature)
 
 reducer = umap.UMAP()
