@@ -8,15 +8,14 @@ from sklearn.preprocessing import StandardScaler
 import math
 import sys
 
-sample_size = 512 #enter length of number of instances per event (sample size = num_points in PointNet)
-data_raw_where = 'data/' # choose where to store raw data(before sampling)
-data_sampled_where = 'data/data_' # choose where to store sampled data
-file = h5py.File('data/run210.h5', 'r') # select the location where your h5 data is stored
+sample_size = 256 #enter length of number of instances per event (sample size = num_points in PointNet)
+data_raw_where = '/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/data/' # choose where to store raw data(before sampling)
+data_sampled_where = '/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/data/data_sampled/' # choose where to store sampled data
+file = h5py.File('/home/DAVIDSON/dmkurdydyk/FRIB_Distant_Transfer/data/run210.h5', 'r') # select the location where your h5 data is stored
 
 # The following will be needed to run later cells to align event ids
 original_keys = list(file.keys()) # the .keys() function lists the labels in a dictionary
 original_length = len(original_keys)
-
 
 #making an array of the lengths of events
 event_lens = np.zeros(original_length, int)
