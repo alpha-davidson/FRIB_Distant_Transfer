@@ -16,10 +16,6 @@ DATA_DIR = tf.keras.utils.get_file(
 )
 DATA_DIR = os.path.join(os.path.dirname(DATA_DIR), "ModelNet10")
 
-
-
-
-
 ############
 #chair_t = 'chair_bathtub'
 chair_t = 'dresser_chair' # 2 classes that we use to train PointNet model, there is no much difference in which two classes do you choose 
@@ -195,12 +191,22 @@ model.summary()
 
 ######### TRAIN MODEL ##############
 
+# Output layer
+if NUM_CLASSES == 2:
+    outputs = layers.Dense(1, activation="sigmoid")(x)  # Single output neuron for binary classification
+    loss_function = "binary_crossentropy"
+else:
+    outputs = layers.Dense(NUM_CLASSES, activation="softmax")(x)  # Multiple output neurons for multi-class
+    loss_function = "sparse_categorical_crossentropy"
+
+model = keras.Model(inputs=inputs, outputs=outputs, name="pointnet")
+
+# Compile model
 model.compile(
-    loss="sparse_categorical_crossentropy",
+    loss=loss_function,
     optimizer=keras.optimizers.Adam(learning_rate=0.001),
     metrics=["sparse_categorical_accuracy"],
 )
-
 
 model.fit(train_dataset, epochs=20, validation_data=test_dataset)
 
