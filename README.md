@@ -120,7 +120,33 @@ events as events with less than `100` points, second is `angus` - this is labele
 
 - `kernel`, `gamma`, `nu`, `degree`, `num_of_train_exmp` - the same as in `Prediction`
 
+# Fall 2023 Update - Fine-Tuning on O16 Experimental Data
 
+This README update highlights the latest changes made to the repository structure and the workflow for fine-tuning the model on experimental O16 data. The structure now aligns closely with established workflows such as PointNetArrow and TPCNet, ensuring familiarity and ease of use.
+
+## Repository Structure Update
+
+The repository has been slightly updated to enhance usability:
+- **Notebooks and Python Files**: The converted and optimized notebooks are now paired with their original, mostly untouched, Python files. Each pair is organized within its own dedicated folder, streamlining the navigation.
+
+## Workflow for Fine-Tuning the Model
+
+### Data Preparation
+1. **Numpy File Generation**
+   - Run `O16_convert_data.ipynb` to generate `.npy` files required for further processing.
+
+2. **Data Pipeline**
+   - Process data step-by-step using `O16_data_pipeline.ipynb` to prepare files for the fine-tuning stage.
+
+3. **Data Preparation for Fine-Tuning**
+   - In the `O16_expt/data_preparation` folder, use `O16_expt_data_prepper.ipynb` to prepare labels and data files for the fine-tuned model.
+
+### Fine-Tuning Process
+- **Location**: `O16_expt/fine_tuning`
+- **Procedure**:
+   - Execute `O16_fine_tuning.ipynb`.
+   - Train the model on O16 data using the previously uploaded Mg22-pre-trained model.
+   - Generate and analyze plots as part of the model training process.
 
 
 
