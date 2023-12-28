@@ -14,4 +14,4 @@ source /opt/conda/bin/activate aot
 # python Data_Sampling.py
 
 # Run the script for Prediction.py
-python Prediction.py
+python fission_evaluation/Prediction.py
